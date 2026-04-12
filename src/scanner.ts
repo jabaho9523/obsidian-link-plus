@@ -1,6 +1,6 @@
 import { App, TFile, CachedMetadata } from "obsidian";
 import { UnlinkedMention } from "./types";
-import { LinkPlusSettings, parseCommaSeparated } from "./settings";
+import { LinkPlusSettings, ignoreKey, parseCommaSeparated } from "./settings";
 
 interface TitleEntry {
 	title: string;
@@ -19,6 +19,7 @@ export async function scanVault(
 	);
 
 	const titleEntries = buildTitleMap(app, files, settings, excludedNotes);
+	const ignoredSet = new Set(settings.ignoredMentions);
 	const mentions: UnlinkedMention[] = [];
 	let count = 0;
 
@@ -33,7 +34,11 @@ export async function scanVault(
 			titleEntries,
 			exclusionZones
 		);
-		mentions.push(...fileMentions);
+		for (const m of fileMentions) {
+			if (!ignoredSet.has(ignoreKey(m.sourceFile.path, m.targetFile.basename))) {
+				mentions.push(m);
+			}
+		}
 
 		count++;
 		if (count % 50 === 0) {
@@ -230,4 +235,27 @@ function extractContext(
 
 function escapeRegex(str: string): string {
 	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function findAliasOwner(
+	app: App,
+	alias: string,
+	excludeFile?: TFile
+): TFile | null {
+	const lower = alias.toLowerCase();
+	for (const file of app.vault.getMarkdownFiles()) {
+		if (excludeFile && file.path === excludeFile.path) continue;
+		if (file.basename.toLowerCase() === lower) return file;
+		const cache = app.metadataCache.getFileCache(file);
+		if (!cache?.frontmatter) continue;
+		const aliases: unknown = cache.frontmatter["aliases"];
+		if (Array.isArray(aliases)) {
+			for (const a of aliases) {
+				if (typeof a === "string" && a.toLowerCase() === lower) return file;
+			}
+		} else if (typeof aliases === "string" && aliases.toLowerCase() === lower) {
+			return file;
+		}
+	}
+	return null;
 }

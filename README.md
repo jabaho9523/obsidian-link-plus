@@ -4,6 +4,11 @@ Find every unlinked mention in your vault and convert them to wikilinks in one c
 
 ![Link Plus demo](docs/demo.gif)
 
+## Before vs after
+
+![Before and after linking](docs/before.png)
+![Vault fully linked](docs/after.png)
+
 ## What it does
 
 - **Vault-wide scan** — finds every piece of text that matches a note title (or alias) but isn't linked
@@ -11,6 +16,8 @@ Find every unlinked mention in your vault and convert them to wikilinks in one c
 - **One-click linking** — convert a single mention to a `[[wikilink]]` instantly
 - **Batch linking** — link all mentions of a note, or every unlinked mention in the vault at once
 - **Smart matching** — case-insensitive, whole-word only, respects frontmatter aliases
+- **Alias management** — add or remove search aliases from the dashboard, no manual YAML editing needed
+- **Ignore mentions** — dismiss individual mentions or exclude a note from results entirely
 - **Skips what it should** — ignores existing links, code blocks, frontmatter, and self-references
 
 Every setting is toggleable. Disable case-insensitive matching, exclude folders, filter out short titles — you're in control.
@@ -43,13 +50,17 @@ Obsidian's core backlinks pane shows unlinked mentions, but only for the note yo
   - **Context snippet** with the matched text highlighted
   - **Link** — converts the mention to a wikilink
   - **Open** — opens the source file and scrolls to the mention
+  - **Ignore** — dismiss this mention so it won't appear again
+- Each group header has:
+  - **Edit aliases** (pencil icon) — open a modal to view, add, or remove the search terms for that note
+  - **Link all** — batch-convert all mentions for that note
+  - **Ignore all** (x icon) — exclude that note from future scans
 - **Link all** at the top converts every unlinked mention in the vault (with confirmation by default)
+- **+ button** in the header — pick any note in the vault and add aliases for it, even if it has no current matches
 
 The dashboard auto-refreshes a couple of seconds after you edit a note so results stay current while you work.
 
 ## Settings
-
-![Link Plus settings](docs/settings.png)
 
 Open **Settings → Community plugins → Link Plus**. You can:
 
@@ -61,6 +72,7 @@ Open **Settings → Community plugins → Link Plus**. You can:
 - Require confirmation before batch linking
 - Disable auto-rescan on vault changes
 - Open the dashboard automatically on startup
+- Clear all ignored mentions to reset dismissals
 
 ## How it works
 

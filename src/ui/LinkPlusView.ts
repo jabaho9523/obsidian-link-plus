@@ -4,6 +4,7 @@ import { ScanResults, groupByTarget, uniqueSourceCount } from "../types";
 import { linkAllMentions } from "../linker";
 import { renderGroupSection } from "./group-section";
 import { ConfirmModal } from "./confirm-modal";
+import { NotePickerModal } from "./note-picker-modal";
 import LinkPlusPlugin from "../main";
 
 export class LinkPlusView extends ItemView {
@@ -75,6 +76,14 @@ export class LinkPlusView extends ItemView {
 		const header = root.createDiv({ cls: "lp-header" });
 		header.createEl("h2", { cls: "lp-title", text: PLUGIN_NAME });
 		const headerActions = header.createDiv({ cls: "lp-header-actions" });
+
+		// Add aliases button
+		const addAliasBtn = headerActions.createEl("button", { cls: "lp-action" });
+		addAliasBtn.ariaLabel = "Add aliases to a note";
+		setIcon(addAliasBtn, "plus");
+		addAliasBtn.addEventListener("click", () => {
+			new NotePickerModal(this.plugin).open();
+		});
 
 		// Rescan button
 		const rescan = headerActions.createEl("button", { cls: "lp-action" });

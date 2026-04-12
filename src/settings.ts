@@ -10,6 +10,8 @@ export interface LinkPlusSettings {
 	confirmBatchLink: boolean;
 	autoRescanOnChange: boolean;
 	openDashboardOnStart: boolean;
+	/** "sourcePath::targetBasename" pairs the user dismissed */
+	ignoredMentions: string[];
 }
 
 export const DEFAULT_SETTINGS: LinkPlusSettings = {
@@ -21,7 +23,12 @@ export const DEFAULT_SETTINGS: LinkPlusSettings = {
 	confirmBatchLink: true,
 	autoRescanOnChange: true,
 	openDashboardOnStart: false,
+	ignoredMentions: [],
 };
+
+export function ignoreKey(sourcePath: string, targetBasename: string): string {
+	return `${sourcePath}::${targetBasename}`;
+}
 
 export function parseCommaSeparated(value: string): string[] {
 	return value
@@ -159,6 +166,25 @@ export class LinkPlusSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		const ignoredCount = this.plugin.settings.ignoredMentions.length;
+		if (ignoredCount > 0) {
+			new Setting(containerEl)
+				.setName("Clear ignored mentions")
+				.setDesc(
+					`${ignoredCount} mention${ignoredCount === 1 ? "" : "s"} currently ignored.`
+				)
+				.addButton((b) =>
+					b
+						.setButtonText("Clear all")
+						.setWarning()
+						.onClick(async () => {
+							this.plugin.settings.ignoredMentions = [];
+							await this.saveAndInvalidate();
+							this.display();
+						})
+				);
+		}
 	}
 
 	private async saveAndInvalidate(): Promise<void> {

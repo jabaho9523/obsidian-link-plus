@@ -1,5 +1,6 @@
 import { MarkdownView, setIcon } from "obsidian";
 import { UnlinkedMention } from "../types";
+import { ignoreKey } from "../settings";
 import { linkSingleMention } from "../linker";
 import LinkPlusPlugin from "../main";
 
@@ -61,6 +62,27 @@ export function renderMentionRow(
 			if (view instanceof MarkdownView) {
 				view.editor.setCursor({ line: mention.line, ch: 0 });
 			}
+		})();
+	});
+
+	// Ignore button — dismiss this mention (source + target pair)
+	const ignoreBtn = actions.createEl("button", { cls: "lp-action" });
+	ignoreBtn.ariaLabel = "Ignore this mention";
+	setIcon(ignoreBtn, "x");
+	ignoreBtn.addEventListener("click", () => {
+		void (async () => {
+			const key = ignoreKey(
+				mention.sourceFile.path,
+				mention.targetFile.basename
+			);
+			if (!plugin.settings.ignoredMentions.includes(key)) {
+				plugin.settings.ignoredMentions.push(key);
+				await plugin.saveSettings();
+			}
+			plugin.orchestrator.removeMention(
+				mention.sourceFile.path,
+				mention.offset
+			);
 		})();
 	});
 }
