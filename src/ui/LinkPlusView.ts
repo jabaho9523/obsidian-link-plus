@@ -29,7 +29,7 @@ export class LinkPlusView extends ItemView {
 		return "link";
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): Promise<void> {
 		const completedUnsub = this.plugin.orchestrator.events.on(
 			"scan:completed",
 			() => this.render()
@@ -49,14 +49,16 @@ export class LinkPlusView extends ItemView {
 		if (!this.plugin.orchestrator.getResults()) {
 			void this.plugin.orchestrator.scan();
 		}
+		return Promise.resolve();
 	}
 
-	async onClose(): Promise<void> {
+	onClose(): Promise<void> {
 		for (const unsub of this.unsubscribes) {
 			unsub();
 		}
 		this.unsubscribes = [];
 		this.contentEl.empty();
+		return Promise.resolve();
 	}
 
 	private renderScanning(): void {
