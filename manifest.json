@@ -1,8 +1,8 @@
 {
 	"id": "link-plus",
 	"name": "Link Plus",
-	"version": "0.1.0",
-	"minAppVersion": "1.4.0",
+	"version": "1.0.0",
+	"minAppVersion": "1.7.2",
 	"description": "Find every unlinked mention in your vault and convert them to wikilinks — one click or batch. Zero setup.",
 	"author": "Jacob Holm",
 	"authorUrl": "https://github.com/jabaho9523",
