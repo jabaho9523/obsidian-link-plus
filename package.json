@@ -1,7 +1,7 @@
 {
 	"name": "link-plus",
-	"version": "1.0.2",
-	"description": "Build a connected second brain in Obsidian. Find every unlinked mention in your vault and convert them to wikilinks — one click or batch. Grow your knowledge graph automatically.",
+	"version": "1.0.3",
+	"description": "Build a connected second brain. Find every unlinked mention in your vault and convert them to wikilinks — one click or batch. Grow your knowledge graph automatically.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
