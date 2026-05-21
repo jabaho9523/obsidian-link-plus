@@ -1,5 +1,7 @@
 # Link Plus
 
+![Link Plus](docs/hero.png)
+
 Build a connected second brain in Obsidian. Find every unlinked mention in your vault and convert them to wikilinks — one click or batch. Grow your knowledge graph automatically, no setup, no learning curve.
 
 ![Link Plus demo](docs/demo.gif)
