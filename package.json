@@ -1,7 +1,7 @@
 {
 	"name": "link-plus",
-	"version": "1.0.1",
-	"description": "Find every unlinked mention in your vault and convert them to wikilinks.",
+	"version": "1.0.2",
+	"description": "Build a connected second brain in Obsidian. Find every unlinked mention in your vault and convert them to wikilinks — one click or batch. Grow your knowledge graph automatically.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
@@ -20,7 +20,9 @@
 		"productivity",
 		"note-taking",
 		"knowledge-management",
-		"pkm"
+		"pkm",
+		"second-brain",
+		"knowledge-graph"
 	],
 	"author": "Jacob Holm",
 	"license": "0BSD",
