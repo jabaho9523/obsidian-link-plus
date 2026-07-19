@@ -137,43 +137,87 @@ function findMentionsInFile(
 
 function computeExclusionZones(content: string): [number, number][] {
 	const zones: [number, number][] = [];
+	const push = (start: number, end: number): void => {
+		if (end > start) zones.push([start, end]);
+	};
+	let m: RegExpExecArray | null;
 
-	// Frontmatter: starts at position 0 with ---
+	// Frontmatter: leading --- ... ---
 	if (content.startsWith("---")) {
 		const endIdx = content.indexOf("\n---", 3);
-		if (endIdx !== -1) {
-			zones.push([0, endIdx + 4]);
+		if (endIdx !== -1) push(0, endIdx + 4);
+	}
+
+	// Fenced code blocks: ``` or ~~~ fences, closing fence anchored to line
+	const fenced = /^(```|~~~)[^\n]*\n[\s\S]*?^\1[ \t]*$/gm;
+	while ((m = fenced.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// Block math: $$ ... $$
+	const mathBlock = /\$\$[\s\S]*?\$\$/g;
+	while ((m = mathBlock.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// HTML comments and Obsidian comments
+	const htmlComment = /<!--[\s\S]*?-->/g;
+	while ((m = htmlComment.exec(content)) !== null) push(m.index, m.index + m[0].length);
+	const obsComment = /%%[\s\S]*?%%/g;
+	while ((m = obsComment.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// Inline code: `...`
+	const inlineCode = /`[^`\n]+`/g;
+	while ((m = inlineCode.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// Inline math: $...$ on a single line (heuristic; treats currency as math = safe)
+	const inlineMath = /\$(?=\S)[^\n$]*?\S\$/g;
+	while ((m = inlineMath.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// Wikilinks and embeds: [[...]] / ![[...]]
+	const wikilinks = /!?\[\[[^\]]+\]\]/g;
+	while ((m = wikilinks.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// Markdown links and images: [text](url) / ![alt](url)
+	const mdLinks = /!?\[[^\]]*\]\([^)]*\)/g;
+	while ((m = mdLinks.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// Autolinks <scheme://...>
+	const angleUrl = /<[a-z][a-z0-9+.-]*:\/\/[^>\s]+>/gi;
+	while ((m = angleUrl.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// Raw URLs
+	const rawUrl = /(?:https?:\/\/|www\.)[^\s<>()[\]]+/gi;
+	while ((m = rawUrl.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// HTML tags <...>
+	const htmlTag = /<\/?[a-zA-Z][^>]*>/g;
+	while ((m = htmlTag.exec(content)) !== null) push(m.index, m.index + m[0].length);
+
+	// Tags: #tag at start of line or after whitespace
+	const tagRe = /(^|\s)(#[A-Za-z0-9_][A-Za-z0-9_/-]*)/g;
+	while ((m = tagRe.exec(content)) !== null) {
+		const lead = m[1] ?? "";
+		const tag = m[2] ?? "";
+		const start = m.index + lead.length;
+		push(start, start + tag.length);
+	}
+
+	return mergeZones(zones);
+}
+
+function mergeZones(zones: [number, number][]): [number, number][] {
+	if (zones.length === 0) return zones;
+	zones.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+	const merged: [number, number][] = [];
+	let current = zones[0]!;
+	for (let i = 1; i < zones.length; i++) {
+		const z = zones[i]!;
+		if (z[0] <= current[1]) {
+			if (z[1] > current[1]) current = [current[0], z[1]];
+		} else {
+			merged.push(current);
+			current = z;
 		}
 	}
-
-	// Fenced code blocks: ```...```
-	const fencedCode = /^```[^\n]*\n[\s\S]*?^```/gm;
-	let m: RegExpExecArray | null;
-	while ((m = fencedCode.exec(content)) !== null) {
-		zones.push([m.index, m.index + m[0].length]);
-	}
-
-	// Inline code: `...` (not inside fenced blocks — handled by zone overlap)
-	const inlineCode = /`[^`\n]+`/g;
-	while ((m = inlineCode.exec(content)) !== null) {
-		zones.push([m.index, m.index + m[0].length]);
-	}
-
-	// Wikilinks: [[...]]
-	const wikilinks = /\[\[[^\]]+\]\]/g;
-	while ((m = wikilinks.exec(content)) !== null) {
-		zones.push([m.index, m.index + m[0].length]);
-	}
-
-	// Markdown links: [text](url)
-	const mdLinks = /\[[^\]]*\]\([^)]*\)/g;
-	while ((m = mdLinks.exec(content)) !== null) {
-		zones.push([m.index, m.index + m[0].length]);
-	}
-
-	// Sort by start position for binary search
-	zones.sort((a, b) => a[0] - b[0]);
-	return zones;
+	merged.push(current);
+	return merged;
 }
 
 function isInExclusionZone(
