@@ -6,6 +6,8 @@ import { renderMentionRow } from "./mention-row";
 import { ConfirmModal } from "./confirm-modal";
 import { AliasModal } from "./alias-modal";
 import LinkPlusPlugin from "../main";
+import { getDisplayName } from "../util/display-name";
+import { DisplayNameMode } from "../settings";
 
 export function renderGroupSection(
 	container: HTMLElement,
@@ -27,7 +29,11 @@ export function renderGroupSection(
 
 	header.createSpan({
 		cls: "lp-group-name",
-		text: group.targetFile.basename,
+		text: getDisplayName(
+			plugin.app,
+			group.targetFile,
+			plugin.settings.displayNameMode,
+		),
 	});
 
 	header.createSpan({
@@ -37,7 +43,11 @@ export function renderGroupSection(
 
 	// Edit aliases
 	const editBtn = header.createEl("button", { cls: "lp-action" });
-	editBtn.ariaLabel = `Edit aliases for ${group.targetFile.basename}`;
+	editBtn.ariaLabel = `Edit aliases for ${getDisplayName(
+		plugin.app,
+		group.targetFile,
+		plugin.settings.displayNameMode,
+	)}`;
 	setIcon(editBtn, "pencil");
 	editBtn.addEventListener("click", (e) => {
 		e.stopPropagation();
@@ -46,7 +56,11 @@ export function renderGroupSection(
 
 	// Link all for this note
 	const linkAllBtn = header.createEl("button", { cls: "lp-action lp-group-link-all" });
-	linkAllBtn.ariaLabel = `Link all mentions of ${group.targetFile.basename}`;
+	linkAllBtn.ariaLabel = `Link all mentions of ${getDisplayName(
+		plugin.app,
+		group.targetFile,
+		plugin.settings.displayNameMode,
+	)}`;
 	setIcon(linkAllBtn, "link");
 	linkAllBtn.addEventListener("click", (e) => {
 		e.stopPropagation();
@@ -63,7 +77,11 @@ export function renderGroupSection(
 			new ConfirmModal(
 				plugin.app,
 				"Link all mentions?",
-				`Convert ${group.mentions.length} mention${group.mentions.length === 1 ? "" : "s"} of "${group.targetFile.basename}" to wikilinks?`,
+				`Convert ${group.mentions.length} mention${group.mentions.length === 1 ? "" : "s"} of "${getDisplayName(
+					plugin.app,
+					group.targetFile,
+					plugin.settings.displayNameMode,
+				)}" to wikilinks?`,
 				"Link all",
 				doLink
 			).open();
@@ -74,7 +92,11 @@ export function renderGroupSection(
 
 	// Ignore all — adds target note to excluded notes
 	const ignoreAllBtn = header.createEl("button", { cls: "lp-action" });
-	ignoreAllBtn.ariaLabel = `Ignore all mentions of ${group.targetFile.basename}`;
+	ignoreAllBtn.ariaLabel = `Ignore all mentions of ${getDisplayName(
+		plugin.app,
+		group.targetFile,
+		plugin.settings.displayNameMode,
+	)}`;
 	setIcon(ignoreAllBtn, "x");
 	ignoreAllBtn.addEventListener("click", (e) => {
 		e.stopPropagation();
