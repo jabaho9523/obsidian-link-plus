@@ -60,6 +60,11 @@ function buildTitleMap(
 	const seen = new Set<string>();
 
 	for (const file of files) {
+		// Skip excluded notes entirely (including all aliases)
+		if (excludedNotes.has(file.basename.toLowerCase())) {
+			continue;
+		}
+
 		const titles: string[] = [file.basename];
 
 		const cache: CachedMetadata | null =
@@ -68,22 +73,29 @@ function buildTitleMap(
 			const aliases: unknown = cache.frontmatter["aliases"];
 			if (Array.isArray(aliases)) {
 				for (const a of aliases) {
-					if (typeof a === "string" && a.length > 0) {
-						titles.push(a);
+					if (typeof a === "string") {
+						const alias = a.trim();
+						if (alias.length > 0) {
+							titles.push(alias);
+						}
 					}
 				}
-			} else if (typeof aliases === "string" && aliases.length > 0) {
-				titles.push(aliases);
+			} else if (typeof aliases === "string") {
+				const alias = aliases.trim();
+				if (alias.length > 0) {
+					titles.push(alias);
+				}
 			}
 		}
 
 		for (const title of titles) {
 			if (title.length < settings.minMatchLength) continue;
-			if (excludedNotes.has(title.toLowerCase())) continue;
+
+			const normalizedTitle = title.trim();
 
 			const key = settings.caseSensitive
-				? title
-				: title.toLowerCase();
+			? normalizedTitle
+			: normalizedTitle.toLowerCase();
 			if (seen.has(key)) continue;
 			seen.add(key);
 

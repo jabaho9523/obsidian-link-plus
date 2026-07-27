@@ -100,6 +100,9 @@ export function renderGroupSection(
 	setIcon(ignoreAllBtn, "x");
 	ignoreAllBtn.addEventListener("click", (e) => {
 		e.stopPropagation();
+
+		console.log("Ignore All button clicked");
+
 		const title = group.targetFile.basename;
 		const current = parseCommaSeparated(plugin.settings.excludedNotes);
 		if (!current.some((n) => n.toLowerCase() === title.toLowerCase())) {
@@ -107,9 +110,20 @@ export function renderGroupSection(
 			plugin.settings.excludedNotes = current.join(", ");
 		}
 		void (async () => {
+			console.log("Before save");
+
 			await plugin.saveSettings();
+
+			console.log("After save");
+			console.log("Excluded notes:", plugin.settings.excludedNotes);
+
 			plugin.orchestrator.invalidate();
-			void plugin.orchestrator.scan();
+
+			console.log("Before scan");
+
+			const results = await plugin.orchestrator.scan();
+
+			console.log("After scan", results);
 		})();
 	});
 
