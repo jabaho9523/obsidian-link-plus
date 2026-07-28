@@ -1,5 +1,6 @@
 import { App, TFile } from "obsidian";
 import { DisplayNameMode } from "../settings";
+import { getPrimaryAlias } from "./aliases";
 
 export function getDisplayName(
 	app: App,
@@ -7,20 +8,8 @@ export function getDisplayName(
 	mode: DisplayNameMode,
 ): string {
 	switch (mode) {
-		case DisplayNameMode.Alias: {
-			const aliases =
-			app.metadataCache.getFileCache(file)?.frontmatter?.aliases;
-
-			if (Array.isArray(aliases) && aliases.length > 0) {
-				return aliases[0];
-			}
-
-			if (typeof aliases === "string") {
-				return aliases;
-			}
-
-			return file.basename;
-		}
+		case DisplayNameMode.Alias:
+			return getPrimaryAlias(app, file) ?? file.basename;
 
 		case DisplayNameMode.Filename:
 		default:
