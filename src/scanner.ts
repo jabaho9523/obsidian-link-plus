@@ -1,5 +1,6 @@
-import { App, TFile, CachedMetadata } from "obsidian";
+import { App, TFile } from "obsidian";
 import { UnlinkedMention } from "./types";
+import { getAliases } from "./util/aliases";
 import { LinkPlusSettings, ignoreKey, parseCommaSeparated } from "./settings";
 
 interface TitleEntry {
@@ -60,30 +61,24 @@ function buildTitleMap(
 	const seen = new Set<string>();
 
 	for (const file of files) {
-		const titles: string[] = [file.basename];
-
-		const cache: CachedMetadata | null =
-			app.metadataCache.getFileCache(file);
-		if (cache?.frontmatter) {
-			const aliases: unknown = cache.frontmatter["aliases"];
-			if (Array.isArray(aliases)) {
-				for (const a of aliases) {
-					if (typeof a === "string" && a.length > 0) {
-						titles.push(a);
-					}
-				}
-			} else if (typeof aliases === "string" && aliases.length > 0) {
-				titles.push(aliases);
-			}
+		// Skip excluded notes entirely (including all aliases)
+		if (excludedNotes.has(file.basename.toLowerCase())) {
+			continue;
 		}
+
+		const titles = [
+			file.basename,
+			...getAliases(app, file),
+		];
 
 		for (const title of titles) {
 			if (title.length < settings.minMatchLength) continue;
-			if (excludedNotes.has(title.toLowerCase())) continue;
+
+			const normalizedTitle = title.trim();
 
 			const key = settings.caseSensitive
-				? title
-				: title.toLowerCase();
+			? normalizedTitle
+			: normalizedTitle.toLowerCase();
 			if (seen.has(key)) continue;
 			seen.add(key);
 
@@ -290,15 +285,10 @@ export function findAliasOwner(
 	for (const file of app.vault.getMarkdownFiles()) {
 		if (excludeFile && file.path === excludeFile.path) continue;
 		if (file.basename.toLowerCase() === lower) return file;
-		const cache = app.metadataCache.getFileCache(file);
-		if (!cache?.frontmatter) continue;
-		const aliases: unknown = cache.frontmatter["aliases"];
-		if (Array.isArray(aliases)) {
-			for (const a of aliases) {
-				if (typeof a === "string" && a.toLowerCase() === lower) return file;
+		for (const alias of getAliases(app, file)) {
+			if (alias.toLowerCase() === lower) {
+				return file;
 			}
-		} else if (typeof aliases === "string" && aliases.toLowerCase() === lower) {
-			return file;
 		}
 	}
 	return null;

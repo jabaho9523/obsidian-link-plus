@@ -3,6 +3,8 @@ import { UnlinkedMention } from "../types";
 import { ignoreKey } from "../settings";
 import { linkSingleMention } from "../linker";
 import LinkPlusPlugin from "../main";
+import { getDisplayName } from "../util/display-name";
+import { DisplayNameMode } from "../settings";
 
 export function renderMentionRow(
 	container: HTMLElement,
@@ -15,7 +17,11 @@ export function renderMentionRow(
 
 	// Source file name (clickable)
 	const title = main.createDiv({ cls: "lp-row-title" });
-	title.textContent = mention.sourceFile.basename;
+	title.textContent = getDisplayName(
+		plugin.app,
+		mention.sourceFile,
+		plugin.settings.displayNameMode,
+	);
 	title.addEventListener("click", () => {
 		void (async () => {
 			const leaf = plugin.app.workspace.getLeaf("tab");
