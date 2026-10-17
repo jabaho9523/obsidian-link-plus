@@ -96,6 +96,16 @@ export default class LinkPlusPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+	refreshViews(): void {
+		for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_LINK_PLUS)) {
+			const view = leaf.view;
+
+			if (view instanceof LinkPlusView) {
+				view.refresh();
+			}
+		}
+	}
+
 	async activateView(): Promise<void> {
 		const { workspace } = this.app;
 		const existing = workspace.getLeavesOfType(VIEW_TYPE_LINK_PLUS);

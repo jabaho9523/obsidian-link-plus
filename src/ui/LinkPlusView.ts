@@ -32,7 +32,7 @@ export class LinkPlusView extends ItemView {
 	onOpen(): Promise<void> {
 		const completedUnsub = this.plugin.orchestrator.events.on(
 			"scan:completed",
-			() => this.render()
+			() => this.refresh()
 		);
 		this.unsubscribes.push(completedUnsub);
 		this.plugin.register(completedUnsub);
@@ -44,7 +44,7 @@ export class LinkPlusView extends ItemView {
 		this.unsubscribes.push(startedUnsub);
 		this.plugin.register(startedUnsub);
 
-		this.render();
+		this.refresh();
 
 		if (!this.plugin.orchestrator.getResults()) {
 			void this.plugin.orchestrator.scan();
@@ -69,7 +69,7 @@ export class LinkPlusView extends ItemView {
 		root.createDiv({ cls: "lp-summary", text: "Scanning vault..." });
 	}
 
-	private render(): void {
+	public refresh(): void {
 		const results = this.plugin.orchestrator.getResults();
 		this.contentEl.empty();
 		const root = this.contentEl.createDiv({ cls: "lp-root" });
