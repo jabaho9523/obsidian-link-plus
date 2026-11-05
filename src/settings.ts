@@ -1,6 +1,11 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import LinkPlusPlugin from "./main";
 
+export enum DisplayNameMode {
+	Filename = "filename",
+	Alias = "alias",
+}
+
 export interface LinkPlusSettings {
 	caseSensitive: boolean;
 	minMatchLength: number;
@@ -10,6 +15,7 @@ export interface LinkPlusSettings {
 	confirmBatchLink: boolean;
 	autoRescanOnChange: boolean;
 	openDashboardOnStart: boolean;
+	displayNameMode: DisplayNameMode
 	/** "sourcePath::targetBasename" pairs the user dismissed */
 	ignoredMentions: string[];
 }
@@ -24,6 +30,7 @@ export const DEFAULT_SETTINGS: LinkPlusSettings = {
 	autoRescanOnChange: true,
 	openDashboardOnStart: false,
 	ignoredMentions: [],
+	displayNameMode: DisplayNameMode.Alias,
 };
 
 export function ignoreKey(sourcePath: string, targetBasename: string): string {
@@ -114,6 +121,22 @@ export class LinkPlusSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl).setName("Display").setHeading();
+
+
+		new Setting(containerEl)
+		.setName("Display note names")
+		.setDesc("Choose how notes are displayed throughout the Link Plus interface.")
+		.addDropdown((d) =>
+		d
+		.addOption(DisplayNameMode.Filename, "Filename")
+		.addOption(DisplayNameMode.Alias, "First alias")
+		.setValue(this.plugin.settings.displayNameMode)
+		.onChange(async (v) => {
+			this.plugin.settings.displayNameMode = v as DisplayNameMode;
+			await this.plugin.saveSettings();
+			this.plugin.refreshViews();
+		})
+		);
 
 		new Setting(containerEl)
 			.setName("Show context in results")
